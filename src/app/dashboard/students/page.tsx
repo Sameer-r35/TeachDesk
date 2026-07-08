@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
+import Link from "next/link"
 import { getStudents } from "@/app/actions/student"
 import { getBatches } from "@/app/actions/batch"
 import { StudentForm } from "./student-form"
@@ -27,7 +28,11 @@ export default async function StudentsPage() {
           <p className="text-gray-500">No students yet.</p>
         )}
         {students.map((student) => (
-          <div key={student.id} className="border rounded p-4 flex justify-between items-center">
+          <Link
+            key={student.id}
+            href={`/dashboard/students/${student.id}`}
+            className="border rounded p-4 flex justify-between items-center hover:bg-gray-50"
+          >
             <div>
               <p className="font-semibold text-black">{student.name}</p>
               <p className="text-sm text-gray-500">
@@ -35,7 +40,7 @@ export default async function StudentsPage() {
               </p>
             </div>
             <span className="text-xs text-gray-400">{student.status}</span>
-          </div>
+          </Link>
         ))}
       </div>
     </div>

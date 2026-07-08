@@ -41,3 +41,19 @@ export async function getStudents() {
     orderBy: { name: "asc" },
   })
 }
+
+export async function getStudentProfile(studentId: string) {
+  const session = await auth()
+  if (!session) return null
+
+  const student = await prisma.student.findFirst({
+    where: { id: studentId, businessId: session.user.businessId },
+    include: {
+      batch: true,
+      attendance: { orderBy: { date: "desc" }, take: 30 },
+      payments: { orderBy: { month: "desc" } },
+    },
+  })
+
+  return student
+}
