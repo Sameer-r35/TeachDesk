@@ -1,13 +1,111 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  TEACHER
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  OVERDUE
+}
+
+model Business {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+
+  users     User[]
+  batches   Batch[]
+  students  Student[]
+  payments  Payment[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id])
+  name         String
+  phone        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  batchesTaught Batch[] @relation("TeacherBatches")
+}
+
+model Batch {
+  id          String   @id @default(cuid())
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id])
+  name        String
+  subject     String
+  schedule    String?
+  teacherId   String?
+  teacher     User?    @relation("TeacherBatches", fields: [teacherId], references: [id])
+
+  students    Student[]
+  attendance  AttendanceRecord[]
+}
+
+model Student {
+  id          String        @id @default(cuid())
+  businessId  String
+  business    Business      @relation(fields: [businessId], references: [id])
+  batchId     String
+  batch       Batch         @relation(fields: [batchId], references: [id])
+  name        String
+  phone       String?
+  parentPhone String?
+  status      StudentStatus @default(ACTIVE)
+  enrolledAt  DateTime      @default(now())
+
+  attendance  AttendanceRecord[]
+  payments    Payment[]
+}
+
+model AttendanceRecord {
+  id        String           @id @default(cuid())
+  studentId String
+  student   Student          @relation(fields: [studentId], references: [id])
+  batchId   String
+  batch     Batch            @relation(fields: [batchId], references: [id])
+  date      DateTime
+  status    AttendanceStatus
+  markedBy  String
+
+  @@unique([studentId, date])
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  studentId  String
+  student    Student       @relation(fields: [studentId], references: [id])
+  businessId String
+  business   Business      @relation(fields: [businessId], references: [id])
+  month      String
+  amount     Float
+  status     PaymentStatus @default(PENDING)
+  paidAt     DateTime?
+  paidVia    String?
+
+  @@unique([studentId, month])
 }
