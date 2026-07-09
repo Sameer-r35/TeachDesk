@@ -61,73 +61,74 @@ export function PaymentsClient() {
   const pendingCount = payments.filter((p) => p.status !== "PAID").length
 
   return (
-    <div>
-      <div className="flex gap-3 mb-4 items-end">
+    <div className="space-y-6">
+      <div className="bg-surface border border-border rounded-xl p-4 flex flex-wrap gap-4 items-end">
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Month</label>
+          <label className="text-xs font-medium text-ink-muted uppercase tracking-wide block mb-1">
+            Month
+          </label>
           <input
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="border rounded p-2 text-black"
+            className="border border-border rounded-md p-2 text-ink font-mono bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
         <div>
-          <label className="text-sm text-gray-600 block mb-1">Amount (per student)</label>
+          <label className="text-xs font-medium text-ink-muted uppercase tracking-wide block mb-1">
+            Amount / student
+          </label>
           <input
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="border rounded p-2 text-black w-28"
+            className="border border-border rounded-md p-2 text-ink font-mono bg-paper w-28 focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
         <button
           onClick={handleGenerate}
-          className="bg-black text-white rounded px-4 py-2 hover:bg-gray-800"
+          className="bg-primary text-white rounded-md px-4 py-2 font-medium hover:bg-primary-dark transition-colors"
         >
           Generate dues
         </button>
+
+        {!loading && payments.length > 0 && (
+          <p className="text-sm text-ink-muted ml-auto font-mono">
+            {pendingCount}/{payments.length} unpaid
+          </p>
+        )}
       </div>
 
-      {!loading && payments.length > 0 && (
-        <p className="text-sm text-gray-600 mb-4">
-          {pendingCount} of {payments.length} students haven't paid yet
-        </p>
-      )}
+      {loading && <p className="text-sm text-ink-muted">Loading...</p>}
 
-      {loading && <p className="text-gray-400">Loading...</p>}
-
-      <div className="space-y-2">
+      <div className="bg-surface border border-border rounded-xl divide-y divide-border overflow-hidden">
         {!loading && payments.length === 0 && (
-          <p className="text-gray-500">
+          <p className="p-5 text-sm text-ink-muted">
             No payment records for this month yet. Click "Generate dues" above.
           </p>
         )}
         {payments.map((p) => (
-          <div
-            key={p.id}
-            className="border rounded p-3 flex justify-between items-center"
-          >
+          <div key={p.id} className="px-5 py-3 flex justify-between items-center">
             <div>
-              <p className="text-black font-medium">{p.student.name}</p>
-              <p className="text-xs text-gray-500">
-                {p.student.batch.name} · ৳{p.amount}
+              <p className="text-ink font-medium">{p.student.name}</p>
+              <p className="text-xs text-ink-muted mt-0.5">
+                {p.student.batch.name} · <span className="font-mono">৳{p.amount}</span>
               </p>
             </div>
             <div className="flex gap-2 items-center">
               {p.status === "PAID" ? (
-                <span className="text-green-600 text-sm font-medium">Paid</span>
+                <span className="stamp text-success">Paid</span>
               ) : (
                 <>
                   <button
                     onClick={() => openWhatsApp(p.student.phone, p.student.name)}
-                    className="px-3 py-1 rounded text-sm bg-blue-100 text-blue-700"
+                    className="px-3 py-1.5 rounded-md text-sm font-medium border border-border text-ink hover:bg-paper transition-colors"
                   >
                     Remind
                   </button>
                   <button
                     onClick={() => handleMarkPaid(p.id)}
-                    className="px-3 py-1 rounded text-sm bg-gray-100 text-gray-700"
+                    className="px-3 py-1.5 rounded-md text-sm font-medium bg-primary text-white hover:bg-primary-dark transition-colors"
                   >
                     Mark paid
                   </button>

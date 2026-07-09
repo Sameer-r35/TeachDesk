@@ -26,7 +26,6 @@ export function AttendanceClient({ batches }: { batches: Batch[] }) {
   }, [batchId, date])
 
   async function handleMark(studentId: string, status: "PRESENT" | "ABSENT") {
-    // optimistic update
     setStudents((prev) =>
       prev.map((s) => (s.studentId === studentId ? { ...s, status } : s))
     )
@@ -34,61 +33,76 @@ export function AttendanceClient({ batches }: { batches: Batch[] }) {
   }
 
   if (batches.length === 0) {
-    return <p className="text-gray-500">Create a batch first.</p>
+    return <p className="text-sm text-ink-muted">Create a batch first.</p>
   }
 
-  return (
-    <div>
-      <div className="flex gap-3 mb-6">
-        <select
-          value={batchId}
-          onChange={(e) => setBatchId(e.target.value)}
-          className="border rounded p-2 text-black"
-        >
-          {batches.map((b) => (
-            <option key={b.id} value={b.id}>
-              {b.name}
-            </option>
-          ))}
-        </select>
+  const presentCount = students.filter((s) => s.status === "PRESENT").length
 
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border rounded p-2 text-black"
-        />
+  return (
+    <div className="space-y-6">
+      <div className="bg-surface border border-border rounded-xl p-4 flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="text-xs font-medium text-ink-muted uppercase tracking-wide block mb-1">
+            Batch
+          </label>
+          <select
+            value={batchId}
+            onChange={(e) => setBatchId(e.target.value)}
+            className="border border-border rounded-md p-2 text-ink bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30"
+          >
+            {batches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-ink-muted uppercase tracking-wide block mb-1">
+            Date
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-border rounded-md p-2 text-ink font-mono bg-paper focus:outline-none focus:ring-2 focus:ring-primary/30"
+          />
+        </div>
+
+        {!loading && students.length > 0 && (
+          <p className="text-sm text-ink-muted font-mono ml-auto">
+            {presentCount}/{students.length} present
+          </p>
+        )}
       </div>
 
-      {loading && <p className="text-gray-400">Loading...</p>}
+      {loading && <p className="text-sm text-ink-muted">Loading...</p>}
 
-      <div className="space-y-2">
+      <div className="bg-surface border border-border rounded-xl divide-y divide-border overflow-hidden">
         {!loading && students.length === 0 && (
-          <p className="text-gray-500">No active students in this batch.</p>
+          <p className="p-5 text-sm text-ink-muted">No active students in this batch.</p>
         )}
         {students.map((s) => (
-          <div
-            key={s.studentId}
-            className="border rounded p-3 flex justify-between items-center"
-          >
-            <span className="text-black font-medium">{s.name}</span>
-            <div className="flex gap-2">
+          <div key={s.studentId} className="px-5 py-3 flex justify-between items-center">
+            <span className="text-ink font-medium">{s.name}</span>
+            <div className="flex rounded-md overflow-hidden border border-border">
               <button
                 onClick={() => handleMark(s.studentId, "PRESENT")}
-                className={`px-3 py-1 rounded text-sm ${
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                   s.status === "PRESENT"
-                    ? "bg-green-600 text-white"
-                    : "bg-gray-100 text-gray-600"
+                    ? "bg-success text-white"
+                    : "bg-surface text-ink-muted hover:bg-paper"
                 }`}
               >
                 Present
               </button>
               <button
                 onClick={() => handleMark(s.studentId, "ABSENT")}
-                className={`px-3 py-1 rounded text-sm ${
+                className={`px-3 py-1.5 text-sm font-medium transition-colors border-l border-border ${
                   s.status === "ABSENT"
-                    ? "bg-red-600 text-white"
-                    : "bg-gray-100 text-gray-600"
+                    ? "bg-danger text-white"
+                    : "bg-surface text-ink-muted hover:bg-paper"
                 }`}
               >
                 Absent

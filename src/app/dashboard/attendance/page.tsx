@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import { getBatches } from "@/app/actions/batch"
+import { PageHeader } from "@/components/ui/page-header"
 import { AttendanceClient } from "./attendance-client"
 
 export default async function AttendancePage() {
@@ -10,9 +11,11 @@ export default async function AttendancePage() {
   const batches = await getBatches()
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6 text-black">Attendance</h1>
-      <AttendanceClient batches={batches} />
+    <div>
+      <PageHeader title="Attendance" subtitle="Mark who showed up, one tap at a time" />
+      <div className="p-8 max-w-2xl">
+        <AttendanceClient batches={batches} />
+      </div>
     </div>
   )
 }
