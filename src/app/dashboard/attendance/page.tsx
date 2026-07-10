@@ -13,7 +13,7 @@ export default async function AttendancePage() {
   return (
     <div>
       <PageHeader title="Attendance" subtitle="Mark who showed up, one tap at a time" />
-      <div className="p-8 max-w-2xl">
+      <div className="p-8">
         <AttendanceClient batches={batches} />
       </div>
     </div>

@@ -10,7 +10,7 @@ export default async function PaymentsPage() {
   return (
     <div>
       <PageHeader title="Payments" subtitle="Know who's paid and who needs a nudge" />
-      <div className="p-8 max-w-2xl">
+      <div className="p-8">
         <PaymentsClient />
       </div>
     </div>
