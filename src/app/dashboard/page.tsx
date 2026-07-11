@@ -2,6 +2,8 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 import Link from "next/link"
 import { getDashboardData } from "@/app/actions/dashboard"
+import { PageHeader } from "@/components/ui/page-header"
+import { StatCard } from "@/components/ui/stat-card"
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -10,85 +12,91 @@ export default async function DashboardPage() {
   const data = await getDashboardData()
   if (!data) redirect("/login")
 
+  const quickLinks = [
+    { href: "/dashboard/batches", label: "Batches", desc: "Create and view batches" },
+    { href: "/dashboard/students", label: "Students", desc: "Add and view students" },
+    { href: "/dashboard/attendance", label: "Attendance", desc: "Mark today's attendance" },
+    { href: "/dashboard/payments", label: "Payments", desc: "Track dues and reminders" },
+  ]
+
   return (
-    <div className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-2xl font-bold text-black mb-1">
-        Welcome, {session.user.name}
-      </h1>
-      <p className="text-gray-500 mb-6">
-        {data.batchCount} batches · {data.studentCount} active students
-      </p>
+    <div>
+      <PageHeader title={`Welcome, ${session.user.name}`} subtitle="Here's where things stand today" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-        <Link
-          href="/dashboard/batches"
-          className="border rounded p-4 hover:bg-gray-50"
-        >
-          <p className="font-semibold text-black">Manage Batches</p>
-          <p className="text-sm text-gray-500">Create and view batches</p>
-        </Link>
-        <Link
-          href="/dashboard/students"
-          className="border rounded p-4 hover:bg-gray-50"
-        >
-          <p className="font-semibold text-black">Manage Students</p>
-          <p className="text-sm text-gray-500">Add and view students</p>
-        </Link>
-        <Link
-          href="/dashboard/attendance"
-          className="border rounded p-4 hover:bg-gray-50"
-        >
-          <p className="font-semibold text-black">Take Attendance</p>
-          <p className="text-sm text-gray-500">Mark today's attendance</p>
-        </Link>
-        <Link
-          href="/dashboard/payments"
-          className="border rounded p-4 hover:bg-gray-50"
-        >
-          <p className="font-semibold text-black">Payments</p>
-          <p className="text-sm text-gray-500">Track dues and reminders</p>
-        </Link>
-      </div>
+      <div className="p-8 max-w-6xl space-y-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <StatCard label="Batches" value={data.batchCount} />
+          <StatCard label="Active students" value={data.studentCount} />
+          <StatCard label="Overdue payments" value={data.overduePayments.length} />
+          <StatCard label="Recent absences" value={data.recentAbsences.length} sublabel="last 7 days" />
+        </div>
 
-      <div className="mb-8">
-        <h2 className="font-semibold text-black mb-3">
-          Overdue payments this month ({data.overduePayments.length})
-        </h2>
-        {data.overduePayments.length === 0 ? (
-          <p className="text-gray-500 text-sm">Everyone's paid up 🎉</p>
-        ) : (
-          <div className="space-y-2">
-            {data.overduePayments.slice(0, 5).map((p) => (
-              <div key={p.id} className="border rounded p-3 flex justify-between">
-                <span className="text-black">{p.student.name}</span>
-                <span className="text-sm text-gray-500">{p.student.batch.name}</span>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {quickLinks.map((q) => (
+            <Link
+              key={q.href}
+              href={q.href}
+              className="bg-surface border border-border rounded-xl p-4 hover:border-primary hover:shadow-sm transition-all"
+            >
+              <p className="font-display font-semibold text-ink">{q.label}</p>
+              <p className="text-xs text-ink-muted mt-1">{q.desc}</p>
+            </Link>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <section>
+            <h2 className="font-display text-lg font-semibold text-ink ledger-heading mb-4">
+              Overdue payments this month
+              <span className="ml-2 font-mono text-sm text-danger align-middle">
+                ({data.overduePayments.length})
+              </span>
+            </h2>
+
+            {data.overduePayments.length === 0 ? (
+              <p className="text-sm text-ink-muted">Everyone's paid up.</p>
+            ) : (
+              <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                <div className="max-h-80 overflow-y-auto divide-y divide-border">
+                  {data.overduePayments.map((p) => (
+                    <div key={p.id} className="px-5 py-3 flex justify-between items-center">
+                      <span className="text-ink font-medium">{p.student.name}</span>
+                      <span className="text-sm text-ink-muted">{p.student.batch.name}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link
+                  href="/dashboard/payments"
+                  className="block px-5 py-3 text-sm text-primary font-medium hover:bg-paper border-t border-border"
+                >
+                  Go to payments →
+                </Link>
               </div>
-            ))}
-            {data.overduePayments.length > 5 && (
-              <Link href="/dashboard/payments" className="text-sm text-blue-600">
-                View all {data.overduePayments.length} →
-              </Link>
             )}
-          </div>
-        )}
-      </div>
+          </section>
 
-      <div>
-        <h2 className="font-semibold text-black mb-3">Recent absences (last 7 days)</h2>
-        {data.recentAbsences.length === 0 ? (
-          <p className="text-gray-500 text-sm">No absences recorded recently.</p>
-        ) : (
-          <div className="space-y-2">
-            {data.recentAbsences.map((a) => (
-              <div key={a.id} className="border rounded p-3 flex justify-between">
-                <span className="text-black">{a.student.name}</span>
-                <span className="text-sm text-gray-500">
-                  {new Date(a.date).toLocaleDateString()}
-                </span>
+          <section>
+            <h2 className="font-display text-lg font-semibold text-ink ledger-heading mb-4">
+              Recent absences
+            </h2>
+            {data.recentAbsences.length === 0 ? (
+              <p className="text-sm text-ink-muted">No absences in the last 7 days.</p>
+            ) : (
+              <div className="bg-surface border border-border rounded-xl overflow-hidden">
+                <div className="max-h-80 overflow-y-auto divide-y divide-border">
+                  {data.recentAbsences.map((a) => (
+                    <div key={a.id} className="px-5 py-3 flex justify-between items-center">
+                      <span className="text-ink font-medium">{a.student.name}</span>
+                      <span className="text-sm text-ink-muted font-mono">
+                        {new Date(a.date).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
-          </div>
-        )}
+            )}
+          </section>
+        </div>
       </div>
     </div>
   )

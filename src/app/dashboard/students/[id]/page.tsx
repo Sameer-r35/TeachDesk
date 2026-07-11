@@ -2,6 +2,7 @@ import { auth } from "@/auth"
 import { redirect, notFound } from "next/navigation"
 import Link from "next/link"
 import { getStudentProfile } from "@/app/actions/student"
+import { PageHeader } from "@/components/ui/page-header"
 
 export default async function StudentProfilePage({
   params,
@@ -20,71 +21,79 @@ export default async function StudentProfilePage({
   const attendanceRate = totalMarked > 0 ? Math.round((presentCount / totalMarked) * 100) : null
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <Link href="/dashboard/students" className="text-sm text-blue-600 mb-4 inline-block">
-        ← Back to students
-      </Link>
+    <div>
+      <PageHeader title={student.name} subtitle={student.batch.name} />
 
-      <h1 className="text-2xl font-bold text-black">{student.name}</h1>
-      <p className="text-gray-500 mb-1">{student.batch.name}</p>
-      <p className="text-sm text-gray-400 mb-6">
-        {student.phone ? `Student: ${student.phone}` : ""}
-        {student.parentPhone ? ` · Parent: ${student.parentPhone}` : ""}
-      </p>
+      <div className="p-8 max-w-2xl space-y-8">
+        <Link href="/dashboard/students" className="text-sm text-primary font-medium hover:underline">
+          ← Back to students
+        </Link>
 
-      {attendanceRate !== null && (
-        <div className="mb-6 bg-gray-50 border rounded p-4">
-          <p className="text-black font-semibold">{attendanceRate}% attendance</p>
-          <p className="text-sm text-gray-500">
-            {presentCount} present out of {totalMarked} marked (last 30 records)
-          </p>
+        <div className="flex gap-6 text-sm text-ink-muted">
+          {student.phone && (
+            <span>Student: <span className="font-mono text-ink">{student.phone}</span></span>
+          )}
+          {student.parentPhone && (
+            <span>Parent: <span className="font-mono text-ink">{student.parentPhone}</span></span>
+          )}
         </div>
-      )}
 
-      <div className="mb-8">
-        <h2 className="font-semibold text-black mb-3">Payment history</h2>
-        {student.payments.length === 0 ? (
-          <p className="text-gray-500 text-sm">No payment records yet.</p>
-        ) : (
-          <div className="space-y-2">
-            {student.payments.map((p) => (
-              <div key={p.id} className="border rounded p-3 flex justify-between">
-                <span className="text-black">{p.month}</span>
-                <span
-                  className={`text-sm font-medium ${
-                    p.status === "PAID" ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {p.status} · ৳{p.amount}
-                </span>
-              </div>
-            ))}
+        {attendanceRate !== null && (
+          <div className="bg-surface border border-border rounded-xl p-5 flex items-center justify-between">
+            <div>
+              <p className="font-display text-2xl font-semibold text-ink">{attendanceRate}%</p>
+              <p className="text-sm text-ink-muted">attendance rate</p>
+            </div>
+            <p className="text-sm text-ink-muted font-mono">
+              {presentCount}/{totalMarked} present
+            </p>
           </div>
         )}
-      </div>
 
-      <div>
-        <h2 className="font-semibold text-black mb-3">Attendance history</h2>
-        {student.attendance.length === 0 ? (
-          <p className="text-gray-500 text-sm">No attendance records yet.</p>
-        ) : (
-          <div className="space-y-2">
-            {student.attendance.map((a) => (
-              <div key={a.id} className="border rounded p-3 flex justify-between">
-                <span className="text-black">
-                  {new Date(a.date).toLocaleDateString()}
-                </span>
-                <span
-                  className={`text-sm font-medium ${
-                    a.status === "PRESENT" ? "text-green-600" : "text-red-500"
-                  }`}
-                >
-                  {a.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+        <section>
+          <h2 className="font-display text-lg font-semibold text-ink ledger-heading mb-4">
+            Payment history
+          </h2>
+          {student.payments.length === 0 ? (
+            <p className="text-sm text-ink-muted">No payment records yet.</p>
+          ) : (
+            <div className="bg-surface border border-border rounded-xl divide-y divide-border overflow-hidden">
+              {student.payments.map((p) => (
+                <div key={p.id} className="px-5 py-3 flex justify-between items-center">
+                  <span className="text-ink font-medium font-mono">{p.month}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-sm text-ink-muted">৳{p.amount}</span>
+                    <span className={`stamp ${p.status === "PAID" ? "text-success" : "text-danger"}`}>
+                      {p.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section>
+          <h2 className="font-display text-lg font-semibold text-ink ledger-heading mb-4">
+            Attendance history
+          </h2>
+          {student.attendance.length === 0 ? (
+            <p className="text-sm text-ink-muted">No attendance records yet.</p>
+          ) : (
+            <div className="bg-surface border border-border rounded-xl divide-y divide-border overflow-hidden">
+              {student.attendance.map((a) => (
+                <div key={a.id} className="px-5 py-3 flex justify-between items-center">
+                  <span className="text-ink font-mono text-sm">
+                    {new Date(a.date).toLocaleDateString()}
+                  </span>
+                  <span className={`stamp ${a.status === "PRESENT" ? "text-success" : "text-danger"}`}>
+                    {a.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   )
